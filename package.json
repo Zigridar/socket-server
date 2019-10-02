@@ -1,0 +1,25 @@
+{
+  "name": "socket-server",
+  "version": "1.0.0",
+  "description": "",
+  "engines": {
+    "node": "10.x"
+  },
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Zigridar/socket-server.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Zigridar/socket-server/issues"
+  },
+  "homepage": "https://github.com/Zigridar/socket-server#readme",
+  "dependencies": {
+    "socket.io": "^2.3.0"
+  }
+}
