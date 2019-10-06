@@ -41,7 +41,6 @@ io.on('connection', socket => {
 
   //no-node connected
   socket.on('offer', (offer, candidate) => {
-
     no_node.push({
       socket: socket,
       offer: offer,
@@ -55,18 +54,19 @@ io.on('connection', socket => {
     console.log('Connect low ' + socket.id);
   });
 
+  //answer from full-node
   socket.on('answer', (answer, candidate, id) => {
     socket.to(id).emit('answer', answer, candidate);
-    console.log('answer emit');
     io.sockets.connected[id].disconnect();
 
+    //connect next peer
     if(checkLow()) {
       const item = no_node.shift();
       connectPeers(item);
     }
   });
 
-  //disconnect
+  //clean disconnected peers
   socket.on('disconnect', () => {
 
     //check full disconnect
