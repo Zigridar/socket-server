@@ -55,8 +55,8 @@ io.on('connection', socket => {
     console.log('Connect low ' + socket.id);
   });
 
-  socket.on('answer', (answer, id) => {
-    socket.to(id).emit('answer', answer);
+  socket.on('answer', (answer, candidate, id) => {
+    socket.to(id).emit('answer', answer, candidate);
     console.log('answer emit');
     io.sockets.connected[id].disconnect();
 
