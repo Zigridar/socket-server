@@ -23,48 +23,51 @@ const checkFull = function() {
   return full_node.length != 0 ? true : false;
 }
 
+
 io.on('connection', socket => {
 
-  function connectPeers(item) {
-    io.to(full_node[0].id).emit('offer', item.offer, item.candidate, item.socket.id);
+  function connectPeers() {
+    const item = no_node.shift();
+
+    io.to(full_node[0].id).emit('offer', item.offer, item.socket.id);
+    setTimeout(() => {
+      if (io.sockets.connected[item.socket.id])
+        io.sockets.connected[item.socket.id].disconnect();
+    }, 10000);
   }
 
   //full node connected
   socket.on('full-node', () => {
     full_node.push(socket);
-    if(checkLow()) {
-      const item = no_node.shift();
-      connectPeers(item);
-    }
-    console.log('Connect full ' + socket.id);
+
+    if(checkLow()) connectPeers();
+
+    console.log('Connect full ' + new Date() + ' ' + socket.id);
+    console.log('Full_node: ' + full_node.length);
   });
 
   //no-node connected
-  socket.on('offer', (offer, candidate) => {
+  socket.on('offer', (offer) => {
     no_node.push({
       socket: socket,
-      offer: offer,
-      candidate: candidate
+      offer: offer
     });
 
-    if(checkFull()) {
-      const item = no_node.shift();
-      connectPeers(item);
-    }
-    console.log('Connect low ' + socket.id);
+    if(checkFull()) connectPeers();
+
+    console.log('Connect low ' + new Date() + ' ' + socket.id);
+    console.log('No_node: ' + no_node.length);
   });
 
   //answer from full-node
-  socket.on('answer', (answer, candidate, id) => {
-    socket.to(id).emit('answer', answer, candidate);
-    io.sockets.connected[id].disconnect();
+  socket.on('answer', (answer, id) => {
+    socket.to(id).emit('answer', answer);
 
     //connect next peer
-    if(checkLow()) {
-      const item = no_node.shift();
-      connectPeers(item);
-    }
+    if(checkLow()) connectPeers();
+
   });
+
 
   //clean disconnected peers
   socket.on('disconnect', () => {
@@ -72,21 +75,28 @@ io.on('connection', socket => {
     //check full disconnect
     full_node.forEach((item, i) => {
       if(item == socket) {
-        full_node.splice(i, 1);
         console.log('disconnect full ' + item.id);
-        return;
+        return full_node.splice(i, 1);
       }
     });
 
     //check low disconnect
     no_node.forEach((item, i) => {
       if(item.socket == socket) {
-        no_node.splice(i, 1);
         console.log('disconnect low ' + item.socket.id);
-        return;
+        return no_node.splice(i, 1);
       }
     });
 
+    console.log('No_node: ' + no_node.length);
+    console.log('Full_node: ' + full_node.length);
   });
 
 });
+
+setInterval(() => {
+  //do somthing
+  console.log('Socket-server is running');
+  console.log('No_node: ' + no_node.length);
+  console.log('Full_node: ' + full_node.length);
+}, 60000);
